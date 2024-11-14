@@ -33,7 +33,7 @@ optree==0.13.1
 packaging==24.2
 pandas==2.2.3
 protobuf==5.28.3
-psycopg2-bianry
+psycopg2-binary
 pyasn1==0.6.1
 pyasn1_modules==0.4.1
 Pygments==2.18.0
