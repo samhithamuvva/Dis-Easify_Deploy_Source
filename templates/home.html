@@ -1,0 +1,288 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>DIS-EASIFY</title>
+
+    <!-- CSS only -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <!-- JavaScript Bundle with Popper  -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+    <!-- Google Fonts  -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;400;900&family=Ubuntu&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;300;400;500;900&family=Ubuntu:wght@300;400;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome  -->
+    <script src="https://kit.fontawesome.com/c7796a4e8f.js" crossorigin="anonymous"></script>
+
+
+    <!-- CSS - Local  -->
+    <link rel="stylesheet" href="{% static 'css/home.css' %}">
+</head>
+
+<body>
+
+    <section id="title">
+
+
+        <div class="container-fluid">
+            <!-- Nav Bar -->
+            <nav class="navbar navbar-expand-lg  navbar-dark">
+                <a class="navbar-brand">Dis-Easify</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="#footer">Support</a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link" href="#testimonials">About Us</a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link" href="#pricing ">Predictions</a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+
+
+
+            <!-- Title -->
+            <div class="row">
+                <div class="col-lg-6">
+                    <h1>Don't know how you are feeling ? Don't get anxious we got you covered . . .</h1>
+                    <a href="disease_pred">
+                        <button type="button" class="btn btn-outline-light btn-lg download-button" ><i class="fa-solid fa-user-doctor"></i> Predict Now</button>
+                    </a>
+
+                </div>
+                <div class="col-lg-6">
+                    <img class="title-img" src="{% static 'images/titleDoctor.png' %}" alt="Title Doctor Image">
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- Features -->
+
+    <section id="features">
+        <div class="row">
+
+            <div class="feature-box col-lg-4">
+                <i class="fa-solid fa-circle-check f-icon"></i>
+                <h3>Easy to use.</h3>
+                <p>So easy to use, even your child could do it.</p>
+            </div>
+
+            <div class="feature-box col-lg-4">
+                <i class="fa-solid fa-bullseye  f-icon"></i>
+                <h3>Accurate</h3>
+                <p>We have tested many methods and finalised the one in which we got the highest precision.</p>
+            </div>
+
+            <div class="feature-box col-lg-4">
+                <i class="fa-solid fa-percent f-icon"></i>
+                <h3>Guaranteed to work.</h3>
+                <p>These are tested under real life conditions.</p>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- Testimonials -->
+
+    <section id="testimonials">
+
+
+        <div id="testimonial-carousel" class="carousel slide" data-bs-ride="carousel">
+            <div class="carousel-inner">
+                                <div class="carousel-item">
+                    <h2 class="testimonial-text">
+                        “If you're already a front-end developer, well, pretend you're also wearing a pirate hat.” ― Ethan Marcotte
+                    </h2>
+                    <img class="testimonial-img" src="{% static 'images/shazid.jpeg' %}" alt="Shazid-profile">
+                    <em>Shazid Shaik</em>
+                </div>
+                
+                <div class="carousel-item active">
+                    <h2>“Simplicity is the ultimate sophistication - one line of code  at a time, converting chaos into clarity.” </h2>
+                    <img class="testimonial-img" src="{% static 'images/samhitha-img.jpeg' %}" alt="samhitha-profile">
+                    <em>Samhitha Muvva</em>
+                </div>
+
+                <div class="carousel-item">
+                    <h2 class="testimonial-text">"Programming isn’t about what you know; it’s about what you can figure out." - Chris Pine</h2>
+                    <img class="testimonial-img" src="{% static 'images/karthik-img.jpeg' %}" alt="karthik-profile">
+                    <em>Sri Karthik Nandam</em>
+                </div>
+
+                <div class="carousel-item">
+                    <h2 class="testimonial-text">
+                        “The cloud is about how you do computing, not where you do computing” — Tim O'Reilly
+                    </h2>
+                    <img class="testimonial-img" src="{% static 'images/nimeesha-img.jpeg' %}" alt="Nimeesha-profile">
+                    <em>Nimeesha Vakacharla</em>
+                </div>
+
+
+
+            </div>
+
+
+            <button class="carousel-control-prev" type="button" data-bs-target="#testimonial-carousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Previous</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#testimonial-carousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Next</span>
+            </button>
+        </div>
+
+
+
+
+
+
+    </section>
+
+
+
+    <!-- Pricing -->
+
+    <section id="pricing">
+
+        <h2>Our Predictions</h2>
+        <p>Given below are the Disease Prdictions we have formed until now.</p>
+
+
+
+
+
+        <div class="row">
+
+            <div class="pricing-col col-lg-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Pneumonia Prediction</h3>
+                    </div>
+
+                    <div class="card-body">
+                        <img class="card-img" src="{% static 'images/pn-img.png' %}" alt="Pneumonia-img">
+                        <p class="pricing-p">Automatically identify whether a patient is suffering from pneumonia or not by looking at chest X-ray images.</p><br />
+                        <a href="pneumonia">
+                            <button class="btn btn-lg btn-outline-dark w-100" type="button">Test</button>
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+
+
+            <div class="pricing-col col-lg-4 col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Diabetes Prediction</h3>
+                    </div>
+
+                    <div class="card-body">
+                        <img class="card-img" src="{% static 'images/diabetes-img1.png' %}" alt="diabetes-img">
+                        <p class="pricing-p">We will be predicting whether the patient has Diabetes or not on the basis of symptoms provided.</p><br />
+                        <a href="diabetes">
+                            <button class="btn btn-lg btn-outline-dark w-100" type="button">Test</button>
+                        </a>
+
+                    </div>
+
+                </div>
+            </div>
+
+
+            <div class="pricing-col col-lg-4 col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Heart Disease Prediction</h3>
+                    </div>
+
+                    <div class="card-body">
+                        <img class="card-img" src="{% static 'images/heart-img.png' %}" alt="Heart-img">
+                        <p class="pricing-p">The goal of our heart disease prediction project is to determine if a patient should be diagnosed with heart disease or not.</p><br>
+                        <a href="heart_disease">
+                            <button class=" w-100 btn btn-lg  btn-outline-dark" type="button">Test</button>
+                        </a>
+
+                    </div>
+
+                </div>
+            </div>
+
+
+
+            <div class="pricing-col col-lg-4 col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Breast Cancer</h3>
+                    </div>
+
+                    <div class="card-body">
+                        <img class="card-img" src="{% static 'images/breast-img.png' %}" alt="Breast-img">
+                        <p class="pricing-p">Using the Breast Cancer Diagnosis, we can create a classifier that can help diagnose patients and predict the likelihood of a breast cancer.</p>
+                        <a href="breast_cancer">
+                            <button class="btn btn-lg btn-outline-dark w-100" type="button">Test</button>
+                        </a>
+
+                    </div>
+
+                </div>
+            </div>
+
+
+
+
+
+
+
+        </div>
+
+
+
+    </section>
+
+
+    <!-- Call to Action -->
+
+    <section id="cta">
+
+        <h3 class="cta-h3">Other predictions are on the way... </h3>
+        <h5 class="cta-h5">Having any queries?</h5>
+        <a href="mailto:shazidrockzz@gmail.com">
+            <button type="button" class="btn btn-dark btn-lg download-button" href=""><i class="fa-solid fa-envelope"></i> Mail us</button>
+        </a>
+        <a href="https://www.instagram.com/shazid_08/">
+            <button type="button" class="btn btn-light btn-lg download-button" href=""><i class="fa-brands fa-instagram"></i> Instagram</button>
+        </a>
+
+
+    </section>
+
+
+    <!-- Footer -->
+
+    <footer id="footer">
+        <p>© Dis-Easify</p>
+
+    </footer>
+
+</body>
+
+</html>

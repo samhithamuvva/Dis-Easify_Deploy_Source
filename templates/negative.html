@@ -1,0 +1,41 @@
+﻿{% load static %}
+<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>Output</title>
+    <!-- CSS local only -->
+    <link rel="stylesheet" href="{% static 'css/negative.css' %}">
+
+    <!--    FAVICON    -->
+    <link rel="icon" type="image/x-icon" href="{% static 'images/favicon.ico' %}" />
+
+
+    <!-- Font Awesome  -->
+    <script src="https://kit.fontawesome.com/c7796a4e8f.js" crossorigin="anonymous"></script>
+</head>
+<body>
+    <div class="text-box">
+        <h1>Result</h1>
+        <table>
+            <tr>
+                <td>
+                    <img class="happy-img" src="{% static 'images/happy-img.gif' %}" alt="Happy Image">
+                </td>
+                <td>
+                    <h3>
+                         {{ pred }}..!!!<br>
+                        {{ word1 }}{{ percent }}{{ word2 }}
+
+
+                    </h3>
+                </td>
+            </tr>
+
+        </table>
+
+    </div>
+
+</body>
+</html>

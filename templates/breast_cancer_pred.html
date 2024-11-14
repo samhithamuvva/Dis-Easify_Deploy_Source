@@ -1,0 +1,216 @@
+{% load static%}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Breast Cancer Prediction</title>
+        <link rel="stylesheet" href="{% static 'css/breast_cancer.css' %}">
+    <style>
+        .container {
+    position: relative;
+    top: 50%;
+    width: 130px;
+    height: 40px;
+    text-align: center;
+}
+
+button {
+    outline: none;
+    height: 40px;
+    text-align: center;
+    width: 130px;
+    border-radius: 40px;
+    background: #243b55;
+    border: 2px solid #03e9f4;
+    color: #03e9f4;
+    letter-spacing: 1px;
+    text-shadow: 0;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+    button:hover {
+        color: white;
+        background: #03e9f4;
+    }
+
+    button:active {
+        letter-spacing: 2px;
+    }
+
+    button:after {
+        content: "SUBMIT";
+    }
+    </style>
+</head>
+<body>
+
+
+
+
+    <div class="login-box">
+        <h2>Breast Cancer Prediction</h2>
+        <form action="breast_cancer_result">
+            <div class="user-box">
+                <input type="text" name="radiusMean" required="">
+                <label>Radius Mean</label>
+            </div>
+
+            <div class="user-box">
+                <input type="text" name="textureMean" required="">
+                <label>Texture Mean</label>
+            </div>
+
+            <div class="user-box">
+                <input type="text" name="perimeterMean" required="">
+                <label>Perimeter Mean</label>
+            </div>
+
+            <div class="user-box">
+                <input type="text" name="areaMean" required="">
+                <label>Area Mean</label>
+            </div>
+
+            <div class="user-box">
+                <input type="text" name="smoothnessMean" required="">
+                <label>Smoothness Mean</label>
+            </div>
+
+            <div class="user-box">
+                <input type="text" name="compactnessMean" required="">
+                <label>Compactness Mean</label>
+            </div>
+
+            <div class="user-box">
+                <input type="text" name="concavityMean" required="">
+                <label>Concavity Mean</label>
+            </div>
+
+            <div class="user-box">
+                <input type="text" name="concavePointsMean" required="">
+                <label>Concave Points Mean</label>
+            </div>
+
+            <div class="user-box">
+                <input type="text" name="symmetryMean" required="">
+                <label>Symmetry Mean</label>
+            </div>
+
+            <div class="user-box">
+                <input type="text" name="fractalDimensionMean" required="">
+                <label>Fractal Dimension Mean</label>
+            </div>
+
+            <div class="user-box">
+                <input type="text" name="radiusSe" required="">
+                <label>Radius SE</label>
+            </div>
+
+            <div class="user-box">
+                <input type="text" name="textureSe" required="">
+                <label>Texture SE</label>
+            </div>
+
+            <div class="user-box">
+                <input type="text" name="perimeterSe" required="">
+                <label>Perimeter SE</label>
+            </div>
+
+            <div class="user-box">
+                <input type="text" name="areaSe" required="">
+                <label>Area SE</label>
+            </div>
+
+            <div class="user-box">
+                <input type="text" name="smoothnessSe" required="">
+                <label>Smoothness SE</label>
+            </div>
+
+            <div class="user-box">
+                <input type="text" name="compactnessSe" required="">
+                <label>Compactness SE</label>
+            </div>
+
+            <div class="user-box">
+                <input type="text" name="concavitySe" required="">
+                <label>Concavity SE</label>
+            </div>
+
+
+            <div class="user-box">
+                <input type="text" name="concavePointsSe" required="">
+                <label>Concave Points SE</label>
+            </div>
+
+            <div class="user-box">
+                <input type="text" name="symmetrySe" required="">
+                <label>Symmetry SE</label>
+            </div>
+
+
+            <div class="user-box">
+                <input type="text" name="fractalDimensionSe" required="">
+                <label>Fractal Dimension SE</label>
+            </div>
+
+            <div class="user-box">
+                <input type="text" name="radiusWorst" required="">
+                <label>Radius Worst</label>
+            </div>
+
+            <div class="user-box">
+                <input type="text" name="textureWorst" required="">
+                <label>Texture Worst</label>
+            </div>
+
+            <div class="user-box">
+                <input type="text" name="perimeterWorst" required="">
+                <label>Perimeter Worst</label>
+            </div>
+
+            <div class="user-box">
+                <input type="text" name="areaWorst" required="">
+                <label>Area Worst</label>
+            </div>
+
+            <div class="user-box">
+                <input type="text" name="smoothnessWorst" required="">
+                <label>Smoothness Worst</label>
+            </div>
+
+            <div class="user-box">
+                <input type="text" name="compactnessWorst" required="">
+                <label>Compactness Worst</label>
+            </div>
+
+            <div class="user-box">
+                <input type="text" name="concavityWorst" required="">
+                <label>Concavity Worst</label>
+            </div>
+
+            <div class="user-box">
+                <input type="text" name="concavePointsWorst" required="">
+                <label>Concave Points Worst</label>
+            </div>
+
+            <div class="user-box">
+                <input type="text" name="symmetryWorst" required="">
+                <label>Symmetry Worst</label>
+            </div>
+
+            <div class="user-box">
+                <input type="text" name="fractalDimensionWorst" required="">
+                <label>Fractal Dimension Worst</label>
+            </div>
+
+            <div class="container">
+                <button id="button" type="submit"></button>
+            </div>
+        </form>
+    </div>
+
+
+</body>
+</html>

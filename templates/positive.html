@@ -1,0 +1,42 @@
+﻿{% load static %}
+<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>Output</title>
+
+    <!-- CSS - Local  -->
+    <link rel="stylesheet" href="{% static 'css/positive.css' %}">
+
+
+</head>
+<body>
+    <div class="text-box">
+        <h1>Result</h1>
+        <table>
+            <tr>
+                <td>
+                    <img class="sad-img" src="{% static 'images/sad-img.gif' %}" alt="Sad Image">
+                </td>
+                <td>
+                    <h3>
+
+                        {{ suffer }}{{ pred }}
+
+
+                    </h3>
+                    <br>
+                    <h3>
+                        {{ word1 }} {{ percent }}
+
+                    </h3>
+                    <h3>{{ word2 }}</h3>
+                </td>
+            </tr>
+
+        </table>
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,133 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>iris prediction</title>
+    <style>
+        * {
+    font-family: 'Roboto', sans-serif;
+}
+
+.container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin-left: -65px;
+    margin-top: -20px;
+    width: 130px;
+    height: 40px;
+    text-align: center;
+}
+.button {
+    outline: none;
+    height: 40px;
+    text-align: center;
+    width: 130px;
+    border-radius: 40px;
+    background: #fff;
+    border: 2px solid #1ecd97;
+    color: #1ecd97;
+    letter-spacing: 1px;
+    text-shadow: 0;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+button:hover {
+  color: white;
+  background: #1ecd97;
+}
+ button:active {
+   letter-spacing: 2px;
+ }
+
+button:after {
+   content: "SUBMIT";
+}
+    </style>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+<h1>Iris Prediction</h1>
+<!--
+<form id="GFG">
+        <div class="user-box">
+            <input type="text" name="sepal_length" required="">
+            <label>sepal_length</label>
+        </div>
+        <div class="user-box">
+            <input type="text" name="sepal_width" required="">
+            <label>sepal_width</label>
+        </div>
+        <div class="user-box">
+            <input type="text" name="petal_length" required="">
+            <label>petal_length</label>
+        </div>
+        <div class="user-box">
+            <input type="text" name="petal_width" required="">
+            <label>petal_width</label>
+        </div>
+
+        sepal length <input type="number" name="sepal_length" required><br>
+        sepal width <input type="number" name="sepal_width" required><br>
+        petal length <input type="number" name="petal_length" required><br>
+        petal width <input type="number" name="petal_width" required><br>
+
+        <input type="submit">
+
+        <a href="/result" onclick="myFunction()">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            Submit
+        </a>
+    </form>
+            <script>
+                function myFunction() {
+                    document.getElementById("GFG").submit();
+                }
+            </script>
+-->
+<form id = "form-id" action="result">
+    <div class="user-box">
+            <input type="text" name="sepal_length" required="">
+            <label>sepal_length</label>
+    </div>
+    <div class="user-box">
+            <input type="text" name="sepal_width" required="">
+            <label>sepal_width</label>
+    </div>
+    <div class="user-box">
+            <input type="text" name="petal_length" required="">
+            <label>petal_length</label>
+    </div>
+    <div class="user-box">
+            <input type="text" name="petal_width" required="">
+            <label>petal_width</label>
+    </div>
+    <!-- <a id="sub" href="javascript:void(0);" onclick="document.getElementById('form-id').submit();"> tttttttttt</a> -->
+    <div class="container">
+        <button class="button" type="submit" id="button" name="button"></button>
+
+    </div>
+
+                <a href="">
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+                Submit
+            </a>
+
+
+
+
+
+
+</form>
+</body>
+</html>
