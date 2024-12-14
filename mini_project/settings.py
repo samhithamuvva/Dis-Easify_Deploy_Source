@@ -53,6 +53,21 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'mini_project.urls'
+# Enforce HTTPS
+SECURE_SSL_REDIRECT = True  # Redirect HTTP to HTTPS
+
+# Trust the proxy headers (Azure Front Door or another reverse proxy)
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# Optional: Allow insecure content to work over HTTP for development purposes (use only in dev environments)
+SECURE_BROWSER_XSS_FILTER = True
+
+# Protect against clickjacking
+X_FRAME_OPTIONS = 'DENY'
+
+# Use secure cookies for sessions
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
 
 TEMPLATES = [
     {
