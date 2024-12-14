@@ -30,7 +30,16 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
+# Add whitenoise to MIDDLEWARE (add after SecurityMiddleware)
+MIDDLEWARE = [
+    'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # Add this line
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    # ... rest of your middleware
+]
 
+# Add whitenoise storage configuration
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 # Application definition
 
 INSTALLED_APPS = [
