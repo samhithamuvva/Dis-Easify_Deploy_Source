@@ -15,7 +15,7 @@ RUN apt-get update && \
 WORKDIR /app
 
 # Copy requirements file
-COPY requirements-ml.txt .
+COPY requirements.txt .
 
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements-ml.txt
