@@ -2,7 +2,7 @@
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 # More info on Python, GitHub Actions, and Azure App Service: https://aka.ms/python-webapps-actions
 
-name: Build and deploy Python app to Azure Web App - Dis-Easify
+name: Build and deploy Python app to Azure Web App - dis-easify
 
 on:
   push:
@@ -65,14 +65,14 @@ jobs:
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_7ABD50D285544D85911FF5AF08F15207 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_EBFF2AC584DC44A5AD97B022D3F9225F }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_5E74E6288D204779B1890F91C1366A90 }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_A253446F631545F799D24310A909CA5D }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_4DDFF2558C524CAA8E034488B7C3A1FA }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_B6FAD0BF19BC4700BB6EACBCDF196677 }}
 
       - name: 'Deploy to Azure Web App'
         uses: azure/webapps-deploy@v3
         id: deploy-to-webapp
         with:
-          app-name: 'Dis-Easify'
+          app-name: 'dis-easify'
           slot-name: 'Production'
           
