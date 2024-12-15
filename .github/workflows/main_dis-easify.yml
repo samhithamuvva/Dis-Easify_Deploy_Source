@@ -11,7 +11,6 @@ on:
   workflow_dispatch:
 
 jobs:
-
   build:
     runs-on: ubuntu-latest
     
@@ -61,13 +60,13 @@ jobs:
     - name: Login to Azure
       uses: azure/login@v2
       with:
-        client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_7ABD50D285544D85911FF5AF08F15207 }}
-        tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_EBFF2AC584DC44A5AD97B022D3F9225F }}
-        subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_5E74E6288D204779B1890F91C1366A90 }}
+        client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID }}
+        tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID }}
+        subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID }}
     
     - name: 'Deploy to Azure Web App'
       id: deploy-to-webapp
       uses: azure/webapps-deploy@v2
       with:
         app-name: 'dis-easify'
-        slot-name: 'Production'
+        slot-name: 'production'
