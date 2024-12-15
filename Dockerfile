@@ -17,7 +17,7 @@ RUN pip install --no-cache-dir --no-deps -r requirements.txt && \
     pip install --no-cache-dir numpy pandas scikit-learn
 
 # Copy application files
-COPY savedModels/ /app/models/
+COPY savedModels/ /savedModels/
 COPY ml_service.py .
 
 EXPOSE 8080
