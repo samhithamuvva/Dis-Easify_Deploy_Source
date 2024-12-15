@@ -7,15 +7,14 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v2
-
+      
       - name: Set up Python version
         uses: actions/setup-python@v1
         with:
           python-version: '3.9'
-
+      
       - name: Create and start virtual environment
         run: |
           python -m venv venv
@@ -30,10 +29,10 @@ jobs:
       - name: Azure Login
         uses: azure/login@v1
         with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_A253446F631545F799D24310A909CA5D }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_4DDFF2558C524CAA8E034488B7C3A1FA }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-
+        
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v2
         with:
