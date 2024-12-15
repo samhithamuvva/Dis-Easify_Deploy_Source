@@ -1,42 +1,48 @@
-name: Build and deploy Django app
+name: Django CI/CD Pipeline
+
 on:
   push:
+    branches: [ main ]
+  pull_request:
     branches: [ main ]
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v2
-      
-      - name: Set up Python version
-        uses: actions/setup-python@v1
-        with:
-          python-version: '3.9'
-      
-      - name: Create and start virtual environment
-        run: |
-          python -m venv venv
-          source venv/bin/activate
-      
-      - name: Install dependencies
-        run: pip install -r requirements.txt
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v3
+      with:
+        python-version: 3.9
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run tests
+      run: |
+        python manage.py test
+    
+    - name: Collect static files
+      run: |
+        python manage.py collectstatic --noinput
+    
+    - name: Azure Login
+      uses: azure/login@v1
+      with:
+        client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_A253446F631545F799D24310A909CA5D }}
+        tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_4DDFF2558C524CAA8E034488B7C3A1FA }}
+        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
         
-      - name: Collect static files
-        run: python manage.py collectstatic --noinput
-        
-      - name: Azure Login
-        uses: azure/login@v1
-        with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_A253446F631545F799D24310A909CA5D }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_4DDFF2558C524CAA8E034488B7C3A1FA }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-        
-      - name: Deploy to Azure Web App
-        uses: azure/webapps-deploy@v2
-        with:
-          app-name: 'dis-easify'
-          slot-name: 'production'
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          package: .
+    - name: Deploy to Azure Web App
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: 'dis-easify'
+        slot-name: 'production'
+        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+        package: .
