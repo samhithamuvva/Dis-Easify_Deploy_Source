@@ -16,7 +16,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application files
-COPY savedModels/ /app/savedModels/
+COPY savedModels/ /savedModels/
 COPY ml_service.py .
 
 EXPOSE 8080
