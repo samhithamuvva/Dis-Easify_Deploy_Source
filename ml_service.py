@@ -29,7 +29,7 @@ tf_models = {
 # Load joblib models
 for model_name, model_file in joblib_models.items():
     try:
-        models[model_name] = load(f'/app/models/{model_file}')
+        models[model_name] = load(f'/savedModels/{model_file}')
         print(f"Loaded {model_name} successfully")
     except Exception as e:
         print(f"Error loading {model_name}: {e}")
@@ -37,7 +37,7 @@ for model_name, model_file in joblib_models.items():
 # Load TensorFlow models
 for model_name, model_file in tf_models.items():
     try:
-        models[model_name] = tf.keras.models.load_model(f'/app/models/{model_file}')
+        models[model_name] = tf.keras.models.load_model(f'/savedModels/{model_file}')
         print(f"Loaded {model_name} successfully")
     except Exception as e:
         print(f"Error loading {model_name}: {e}")
