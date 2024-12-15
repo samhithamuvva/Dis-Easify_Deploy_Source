@@ -11,13 +11,12 @@ RUN apt-get update && \
 
 WORKDIR /app
 
-# Copy requirements and install dependencies with pip's --no-deps flag
+# Copy requirements and install dependencies
 COPY requirements.txt .
-RUN pip install --no-cache-dir --no-deps -r requirements.txt && \
-    pip install --no-cache-dir numpy pandas scikit-learn
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application files
-COPY savedModels/ /savedModels/
+COPY savedModels/ /app/savedModels/
 COPY ml_service.py .
 
 EXPOSE 8080
