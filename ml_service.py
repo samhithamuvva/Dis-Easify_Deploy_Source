@@ -8,10 +8,14 @@ import os
 
 app = FastAPI()
 
-# Load all models at startup
-models = {}
+# Verbose TensorFlow and System Information
+print("System Information:")
+print("Current Working Directory:", os.getcwd())
+print("TensorFlow Version:", tf.__version__)
+print("Python Version:", import sys; sys.version)
+print("Contents of savedModels:", os.listdir('savedModels'))
 
-# Load joblib models
+# Load models configuration
 joblib_models = {
     'breast_cancer': 'breast_cancer_rfc_model.joblib',
     'diabetes': 'diabetes_dtc_model.joblib',
@@ -21,26 +25,45 @@ joblib_models = {
     'heart1': 'heart_rfc_model1.joblib'
 }
 
-# Load TensorFlow models
 tf_models = {
     'pneumonia': 'pneumonia.h5'
 }
 
-# Load joblib models
+# Initialize models dictionary
+models = {}
+
+# Load Joblib Models
 for model_name, model_file in joblib_models.items():
     try:
-        models[model_name] = load(f'/savedModels/{model_file}')
-        print(f"Loaded {model_name} successfully")
+        full_path = os.path.join('savedModels', model_file)
+        models[model_name] = load(full_path)
+        print(f"Loaded Joblib Model {model_name} successfully from {full_path}")
     except Exception as e:
-        print(f"Error loading {model_name}: {e}")
+        print(f"Error loading Joblib Model {model_name}: {e}")
 
-# Load TensorFlow models
+# Load TensorFlow Models with Enhanced Debugging
 for model_name, model_file in tf_models.items():
     try:
-        models[model_name] = tf.keras.models.load_model(f'/savedModels/{model_file}')
-        print(f"Loaded {model_name} successfully")
+        full_path = os.path.join('savedModels', model_file)
+        print(f"Attempting to load TensorFlow Model {model_name}")
+        print(f"Full model path: {full_path}")
+        print(f"Absolute path: {os.path.abspath(full_path)}")
+        print(f"File exists: {os.path.exists(full_path)}")
+
+        # Try loading with additional parameters
+        model = tf.keras.models.load_model(full_path, compile=False)
+        
+        # Verify model loaded correctly
+        print(f"Model {model_name} input shape: {model.input_shape}")
+        print(f"Model {model_name} output shape: {model.output_shape}")
+        
+        models[model_name] = model
+        print(f"Loaded TensorFlow Model {model_name} successfully")
     except Exception as e:
-        print(f"Error loading {model_name}: {e}")
+        print(f"Detailed Error Loading TensorFlow Model {model_name}:")
+        print(str(e))
+        import traceback
+        traceback.print_exc()
 
 class PredictionRequest(BaseModel):
     model_name: str
@@ -55,9 +78,10 @@ async def predict(request: PredictionRequest):
         model = models[request.model_name]
         features = np.array(request.features)
         
-        # Reshape features for TensorFlow models if needed
+        # Special handling for TensorFlow models
         if request.model_name in tf_models:
-            features = features.reshape(model.input_shape)
+            # Reshape to match model's expected input
+            features = features.reshape(model.input_shape[1:])
         
         prediction = model.predict(features.reshape(1, -1))
         return {"prediction": prediction.tolist()}
@@ -80,3 +104,9 @@ async def list_models():
             "loaded_models": list(models.keys())
         }
     }
+
+# Optional: If you want to add more detailed error logging
+@app.exception_handler(Exception)
+async def global_exception_handler(request, exc):
+    print(f"Unhandled exception: {exc}")
+    return {"error": "An unexpected error occurred"}
