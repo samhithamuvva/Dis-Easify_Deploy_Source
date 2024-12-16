@@ -184,52 +184,49 @@ def breast_cancer_result(request):
         logger.error(f"Breast cancer prediction error: {str(e)}")
         return render(request, 'error.html', {'error': str(e)})
 
-# Pneumonia Detection
-def pneumonia(request):
-    return render(request, 'pneumonia_pred.html')
-
 def pneumonia_result(request):
+    if request.method != 'POST':
+        return render(request, 'error.html', {'error': 'Invalid request method'})
+        
     try:
+        if 'img' not in request.FILES:
+            return render(request, 'error.html', {'error': 'No image file uploaded'})
+            
         fileobj = request.FILES['img']
         fs = FileSystemStorage()
         filePathName = fs.save(fileobj.name, fileobj)
-        filePathName = fs.url(filePathName)
+        filepath = fs.path(filePathName)
         
         # Read file and convert to base64
-        with open('.' + filePathName, 'rb') as image_file:
+        with open(filepath, 'rb') as image_file:
             encoded_image = base64.b64encode(image_file.read()).decode('utf-8')
         
-        # Updated to use predict_image endpoint
         response = requests.post(
             f"{settings.ML_SERVICE_URL}/predict_image", 
             json={
                 'model_name': 'pneumonia',
                 'image': encoded_image
             },
-            timeout=30  # Increased timeout for image processing
+            timeout=30
         )
+        
+        # Clean up the file after processing
+        fs.delete(filePathName)
         
         if response.status_code == 200:
             result = response.json()
             pred = result['prediction']
             confidence = result['confidence']
             
-            if pred == 1:
-                return render(request, 'positive.html', {
-                    'filePathName': filePathName, 
-                    'pred': "you have pneumonia",
-                    'percent': confidence,
-                    'word1': "the model is ",
-                    'word2': "% sure that it has detected pneumonia in the given xray "
-                })
-            else:
-                return render(request, 'negative.html', {
-                    'filePathName': filePathName,
-                    'pred': "no pneumonia",
-                    'percent': confidence,
-                    'word1': "the model is ",
-                    'word2': "% sure that the given xray is normal"
-                })
+            context = {
+                'pred': "you have pneumonia" if pred == 1 else "no pneumonia",
+                'percent': confidence,
+                'word1': "the model is ",
+                'word2': "% sure that " + ("it has detected pneumonia" if pred == 1 else "the xray is normal")
+            }
+            
+            template = 'positive.html' if pred == 1 else 'negative.html'
+            return render(request, template, context)
         else:
             logger.error(f"Pneumonia ML service error: {response.text}")
             return render(request, 'error.html', {'error': 'ML service error'})
@@ -237,7 +234,7 @@ def pneumonia_result(request):
     except Exception as e:
         logger.error(f"Pneumonia prediction error: {str(e)}")
         return render(request, 'error.html', {'error': str(e)})
-
+        
 # General Disease Prediction
 def disease_pred(request):
     return render(request, 'disease_pred.html')
