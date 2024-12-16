@@ -4,6 +4,7 @@ import requests
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
 import base64
+import pandas as pd
 import logging
 
 # Configure logging
