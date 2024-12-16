@@ -1,0 +1,42 @@
+COMMANDS USED FOR CLOUD DEPLOYMENT:
+
+Basic Setup:
+# Get access token
+az acr login -n diseasify --expose-token
+
+# Build directly using ACR Tasks (this doesn't require Docker locally)
+az acr build --registry diseasify --image ml-service:latest https://github.com/yourusername/Dis-Easify_Deploy_Source.git
+
+az account set --subscription <subid>
+
+Commands for ACI and ACR:
+IP 4.149.197.99  diseasify-ml.westus2.azurecontainer.io
+az container logs --resource-group Dis-Easify --name models
+az acr repository list --name diseasify --output table
+
+#to delete current containers: 
+az container delete --resource-group Dis-Easify --name models --yes
+
+#create conainer 
+az container create --resource-group Dis-Easify --name models --image diseasifymodels.azurecr.io/ml-service:latest --registry-login-server diseasifymodels.azurecr.io --registry-username diseasifymodels --registry-password <password> --ports 8080 --dns-name-label diseasify-ml --restart-policy OnFailure
+
+#recreate the container:
+az container create --resource-group Dis-Easify --name models --image diseasifymodels.azurecr.io/ml-service:latest --registry-login-server diseasifymodels.azurecr.io --registry-username diseasifymodels --registry-password <password> --ports 8080 --dns-name-label diseasify-ml --restart-policy OnFailure --memory 4 --cpu 2 --environment-variables PYTHONUNBUFFERED=1 DEBUG=1
+
+az container show --name models --resource-group Dis-Easify
+az container logs --name models --resource-group Dis-Easify
+restart ommand: az container restart --name models --resource-group Dis-Easify
+
+urls:
+http://diseasify-ml.eastus.azurecontainer.io:8080/health
+http://diseasify-ml.eastus.azurecontainer.io:8080/models
+az container logs --resource-group Dis-Easify --name models
+
+logs checking: 
+az webapp log tail --name dis-easify --resource-group Dis-Easify
+
+to stop and start application:
+az webapp stop --name dis-easify --resource-group Dis-Easify
+az webapp start --name dis-easify --resource-group Dis-Easify
+
+az webapp deployment source config --name dis-easify-f0cghzhfawh5crah --resource-group Dis-Easify --repo-url https://github.com/samhithamuvva/Dis-Easify_Deploy_Source/tree/mainDis-Easify_Deploy_Source --branch main --manual-integration
