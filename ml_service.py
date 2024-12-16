@@ -41,7 +41,7 @@ logger.info(f"Python Version: {sys.version}")
 logger.info(f"TensorFlow Version: {tf.__version__}")
 
 # Verify savedModels Directory
-savedModels_path = 'savedModels'
+savedModels_path = os.path.join(os.getcwd(), 'savedModels')
 try:
     logger.info("\nSavedModels Directory Check:")
     logger.info(f"Directory Exists: {os.path.exists(savedModels_path)}")
