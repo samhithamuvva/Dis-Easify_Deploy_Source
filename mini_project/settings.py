@@ -37,6 +37,7 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'mini_project.urls'
+CSRF_TRUSTED_ORIGINS = ['https://*.azurewebsites.net'] 
 
 TEMPLATES = [
     {
