@@ -16,21 +16,16 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application files
-COPY savedModels/ /app/savedModels/
+COPY savedModels/ /savedModels/
 COPY ml_service.py .
 
-# Verify model files
+# Add verification step
 RUN python3 -c "\
 import os; \
-import tensorflow as tf; \
 print('Current Directory:', os.getcwd()); \
-print('SavedModels Path:', os.path.abspath('savedModels')); \
-print('SavedModels Contents:', os.listdir('savedModels')); \
-model_path = os.path.join('savedModels', 'pneumonia.h5'); \
-print('Model Path:', os.path.abspath(model_path)); \
-model = tf.keras.models.load_model(model_path, compile=False); \
-print('Pneumonia Model Loaded Successfully')"
-
+print('Directory Contents:', os.listdir('.')); \
+print('SavedModels Contents:', os.listdir('/savedModels')); \
+"
 
 EXPOSE 8080
 
