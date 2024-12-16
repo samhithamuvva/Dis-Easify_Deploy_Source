@@ -89,7 +89,7 @@ def diabetes_result(request):
 
 # Heart Disease Prediction
 def heart_disease(request):
-    return render(request, 'heart_pred.html')
+    return render(request, 'heart_css_pred.html')
 
 def heart_disease_result(request):
     try:
@@ -244,46 +244,88 @@ def disease_pred(request):
 
 def disease_pred_result(request):
     try:
-        # Collect symptoms
-        symptoms = [
-            request.GET['symptom1'], 
-            request.GET['symptom2'], 
-            request.GET['symptom3'], 
-            request.GET['symptom4'], 
-            request.GET['symptom5']
-        ]
+        symptom1 = request.GET['symptom1']
+        symptom2 = request.GET['symptom2']
+        symptom3 = request.GET['symptom3']
+        symptom4 = request.GET['symptom4']
+        symptom5 = request.GET['symptom5']
         
-        # Remove 'none' values
-        list_updated = [symp for symp in symptoms if symp != 'none']
-        
-        if not list_updated:
+        symp_list = [symptom1, symptom2, symptom3, symptom4, symptom5]
+        list_updated = []
+
+        for symp in symp_list:
+            if symp != 'none':
+                list_updated.append(symp)
+
+        if list_updated == []:
             return render(request, 'error.html', {'error': 'Please enter at least one symptom'})
         
+        # Your original symptom list
+        symptoms = ['itching', 'skin_rash', 'nodal_skin_eruptions', 'continuous_sneezing', 'shivering', 'chills',
+                   'joint_pain', 'stomach_pain', 'acidity', 'ulcers_on_tongue', 'muscle_wasting', 'vomiting', 
+                   'burning_micturition', 'spotting_urination', 'fatigue', 'weight_gain', 'anxiety', 
+                   'cold_hands_and_feets', 'mood_swings', 'weight_loss', 'restlessness', 'lethargy', 
+                   'patches_in_throat', 'irregular_sugar_level', 'cough', 'high_fever', 'sunken_eyes', 
+                   'breathlessness', 'sweating', 'dehydration', 'indigestion', 'headache', 'yellowish_skin', 
+                   'dark_urine', 'nausea', 'loss_of_appetite', 'pain_behind_the_eyes', 'back_pain', 
+                   'constipation', 'abdominal_pain', 'diarrhoea', 'mild_fever', 'yellow_urine', 
+                   'yellowing_of_eyes', 'acute_liver_failure', 'fluid_overload', 'swelling_of_stomach', 
+                   'swelled_lymph_nodes', 'malaise', 'blurred_and_distorted_vision', 'phlegm', 
+                   'throat_irritation', 'redness_of_eyes', 'sinus_pressure', 'runny_nose', 'congestion', 
+                   'chest_pain', 'weakness_in_limbs', 'fast_heart_rate', 'pain_during_bowel_movements', 
+                   'pain_in_anal_region', 'bloody_stool', 'irritation_in_anus', 'neck_pain', 'dizziness', 
+                   'cramps', 'bruising', 'obesity', 'swollen_legs', 'swollen_blood_vessels', 
+                   'puffy_face_and_eyes', 'enlarged_thyroid', 'brittle_nails', 'swollen_extremeties', 
+                   'excessive_hunger', 'extra_marital_contacts', 'drying_and_tingling_lips', 'slurred_speech', 
+                   'knee_pain', 'hip_joint_pain', 'muscle_weakness', 'stiff_neck', 'swelling_joints', 
+                   'movement_stiffness', 'spinning_movements', 'loss_of_balance', 'unsteadiness', 
+                   'weakness_of_one_body_side', 'loss_of_smell', 'bladder_discomfort', 'foul_smell_of_urine', 
+                   'continuous_feel_of_urine', 'passage_of_gases', 'internal_itching', 'toxic_look_(typhos)', 
+                   'depression', 'irritability', 'muscle_pain', 'altered_sensorium', 'red_spots_over_body', 
+                   'belly_pain', 'abnormal_menstruation', 'dischromic_patches', 'watering_from_eyes', 
+                   'increased_appetite', 'polyuria', 'family_history', 'mucoid_sputum', 'rusty_sputum', 
+                   'lack_of_concentration', 'visual_disturbances', 'receiving_blood_transfusion', 
+                   'receiving_unsterile_injections', 'coma', 'stomach_bleeding', 'distention_of_abdomen', 
+                   'history_of_alcohol_consumption', 'fluid_overload', 'blood_in_sputum', 
+                   'prominent_veins_on_calf', 'palpitations', 'painful_walking', 'pus_filled_pimples', 
+                   'blackheads', 'scurring', 'skin_peeling', 'silver_like_dusting', 'small_dents_in_nails', 
+                   'inflammatory_nails', 'blister', 'red_sore_around_nose', 'yellow_crust_ooze']
+
+        # Create feature vector
+        index = [1 if symptom in list_updated else 0 for symptom in symptoms]
+        
+        # Make prediction using ML service
         response = requests.post(
-            f"{settings.ML_SERVICE_URL}/predict", 
+            f"{settings.ML_SERVICE_URL}/predict",
             json={
-                'model_name': 'disease_dtc',  # Changed from 'general_disease' to 'disease_dtc'
-                'features': list_updated      # Changed from 'symptoms' to 'features' to match API
+                'model_name': 'disease_dtc',
+                'features': index
             },
             timeout=10
         )
         
         if response.status_code == 200:
-            result = response.json()
-            prediction = result['prediction'][0]  # Get the numeric prediction
-            disease = get_disease_name(prediction)  # Map number to disease name
-            doctor = get_recommended_doctor(disease)  # Get recommended doctor
+            prediction = response.json()['prediction'][0]
+            
+            # Read doctor recommendations from CSV
+            doc = pd.read_csv('datasets/doctor_list.csv')
+            c = doc.loc[prediction, "prognosis"]
+            d = doc.loc[prediction, "Doctor"]
+            
+            hh = "Please consult "
+            gg = "You might be suffering from "
             
             return render(request, 'positive.html', {
-                'pred': disease,
-                'percent': doctor,
-                'word1': "Please consult ",
-                'suffer': "You might be suffering from "
+                'pred': c,
+                'percent': d,
+                'word1': hh,
+                'suffer': gg
             })
+            
         else:
-            logger.error(f"Disease prediction ML service error: {response.text}")
+            logger.error(f"Disease prediction error: {response.text}")
             return render(request, 'error.html', {'error': 'ML service error'})
-    
+            
     except Exception as e:
         logger.error(f"Disease prediction error: {str(e)}")
         return render(request, 'error.html', {'error': str(e)})
