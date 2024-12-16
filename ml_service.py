@@ -23,11 +23,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Print current directory and contents for debugging
-print("Current directory:", os.getcwd())
-print("Directory contents:", os.listdir())
-print("Models directory contents:", os.listdir("/savedModels"))
-
 # Load all models at startup
 models = {}
 
@@ -41,9 +36,12 @@ joblib_models = {
     'heart1': 'heart_rfc_model1.joblib'
 }
 
-# TensorFlow models configuration
+# TensorFlow models configuration with expected shapes
 tf_models = {
-    'pneumonia': 'pneumonia.h5'
+    'pneumonia': {
+        'file': 'pneumonia.h5',
+        'input_shape': (224, 224, 1)  # Standard shape for medical images
+    }
 }
 
 # Load joblib models
@@ -56,10 +54,22 @@ for model_name, model_file in joblib_models.items():
         logger.error(f"Error loading {model_name}: {e}")
 
 # Load TensorFlow models
-for model_name, model_file in tf_models.items():
+for model_name, model_info in tf_models.items():
     try:
-        logger.info(f"Attempting to load {model_name} from /savedModels/{model_file}")
-        models[model_name] = tf.keras.models.load_model(f'/savedModels/{model_file}')
+        logger.info(f"Attempting to load {model_name} from /savedModels/{model_info['file']}")
+        # Custom load for TensorFlow models
+        custom_objects = None
+        models[model_name] = tf.keras.models.load_model(
+            f'/savedModels/{model_info["file"]}',
+            custom_objects=custom_objects,
+            compile=False
+        )
+        # Recompile the model
+        models[model_name].compile(
+            optimizer='adam',
+            loss='binary_crossentropy',
+            metrics=['accuracy']
+        )
         logger.info(f"Loaded {model_name} successfully")
     except Exception as e:
         logger.error(f"Error loading {model_name}: {e}")
@@ -67,32 +77,6 @@ for model_name, model_file in tf_models.items():
 class PredictionRequest(BaseModel):
     model_name: str
     features: List[Union[float, int]]
-
-@app.get("/")
-async def root():
-    """Root endpoint to indicate API is live."""
-    return {"status": "OK", "message": "Welcome to the Disease Prediction API"}
-
-@app.get("/health")
-async def health_check():
-    """Health check endpoint."""
-    return {
-        "status": "healthy",
-        "available_models": list(models.keys()),
-        "model_count": len(models)
-    }
-
-@app.get("/models")
-async def list_models():
-    """List all available models and their details."""
-    return {
-        "total_models": len(models),
-        "available_models": list(models.keys()),
-        "models_info": {
-            "joblib_models": list(joblib_models.keys()),
-            "tensorflow_models": list(tf_models.keys())
-        }
-    }
 
 @app.post("/predict")
 async def predict(request: PredictionRequest):
@@ -107,11 +91,13 @@ async def predict(request: PredictionRequest):
         model = models[request.model_name]
         features = np.array(request.features)
         
-        # Handle TensorFlow models differently
+        # Handle different model types
         if request.model_name in tf_models:
-            # Add specific shape handling for pneumonia model
-            if request.model_name == 'pneumonia':
-                features = features.reshape((1, 36, 36, 1))  # Adjust shape as needed
+            # For pneumonia model
+            expected_shape = tf_models[request.model_name]['input_shape']
+            features = features.reshape((1,) + expected_shape)
+            # Ensure values are between 0 and 1
+            features = features / 255.0 if features.max() > 1.0 else features
             prediction = model.predict(features)
         else:
             prediction = model.predict(features.reshape(1, -1))
@@ -125,6 +111,39 @@ async def predict(request: PredictionRequest):
         raise HTTPException(status_code=400, detail=f"Invalid input shape: {str(ve)}")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Prediction error: {str(e)}")
+
+@app.get("/health")
+async def health_check():
+    """Health check endpoint."""
+    return {
+        "status": "healthy",
+        "available_models": list(models.keys()),
+        "model_count": len(models),
+        "loaded_models": {
+            name: "loaded" if name in models else "failed"
+            for name in list(joblib_models.keys()) + list(tf_models.keys())
+        }
+    }
+
+@app.get("/models")
+async def list_models():
+    """List all available models and their details."""
+    return {
+        "total_models": len(models),
+        "available_models": list(models.keys()),
+        "models_info": {
+            "joblib_models": {
+                name: "loaded" for name in joblib_models.keys() if name in models
+            },
+            "tensorflow_models": {
+                name: {
+                    "status": "loaded" if name in models else "failed",
+                    "expected_input_shape": model_info["input_shape"]
+                }
+                for name, model_info in tf_models.items()
+            }
+        }
+    }
 
 if __name__ == "__main__":
     import uvicorn
