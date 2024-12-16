@@ -259,16 +259,17 @@ def disease_pred_result(request):
         response = requests.post(
             f"{settings.ML_SERVICE_URL}/predict", 
             json={
-                'model_name': 'disease_dtc',
-                'symptoms': list_updated
+                'model_name': 'disease_dtc',  # Changed from 'general_disease' to 'disease_dtc'
+                'features': list_updated      # Changed from 'symptoms' to 'features' to match API
             },
             timeout=10
         )
         
         if response.status_code == 200:
             result = response.json()
-            disease = result['disease']
-            doctor = result['recommended_doctor']
+            prediction = result['prediction'][0]  # Get the numeric prediction
+            disease = get_disease_name(prediction)  # Map number to disease name
+            doctor = get_recommended_doctor(disease)  # Get recommended doctor
             
             return render(request, 'positive.html', {
                 'pred': disease,
@@ -277,9 +278,9 @@ def disease_pred_result(request):
                 'suffer': "You might be suffering from "
             })
         else:
-            logger.error(f"General disease ML service error: {response.text}")
+            logger.error(f"Disease prediction ML service error: {response.text}")
             return render(request, 'error.html', {'error': 'ML service error'})
     
     except Exception as e:
-        logger.error(f"General disease prediction error: {str(e)}")
+        logger.error(f"Disease prediction error: {str(e)}")
         return render(request, 'error.html', {'error': str(e)})
