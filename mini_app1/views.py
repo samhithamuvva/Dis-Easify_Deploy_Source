@@ -183,6 +183,9 @@ def breast_cancer_result(request):
     except Exception as e:
         logger.error(f"Breast cancer prediction error: {str(e)}")
         return render(request, 'error.html', {'error': str(e)})
+        
+def pneumonia(request):
+    return render(request, 'pneumonia_pred.html')
 
 def pneumonia_result(request):
     if request.method != 'POST':
