@@ -19,6 +19,18 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY savedModels/ /savedModels/
 COPY ml_service.py .
 
+# Verify model files
+RUN python3 -c "\
+import os; \
+import tensorflow as tf; \
+print('Current Directory:', os.getcwd()); \
+print('SavedModels Contents:', os.listdir('savedModels')); \
+model_path = 'savedModels/pneumonia.h5'; \
+print('Model Path:', os.path.abspath(model_path)); \
+model = tf.keras.models.load_model(model_path, compile=False); \
+print('Pneumonia Model Loaded Successfully')"
+
+
 EXPOSE 8080
 
 CMD ["uvicorn", "ml_service:app", "--host", "0.0.0.0", "--port", "8080"]
