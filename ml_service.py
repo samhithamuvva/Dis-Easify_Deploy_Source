@@ -5,52 +5,22 @@ import numpy as np
 from joblib import load
 import tensorflow as tf
 import os
-import sys
 import traceback
 import base64
-import logging
-from io import BytesIO
 from PIL import Image
-import numpy as np
-
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.StreamHandler(sys.stdout),
-        logging.FileHandler('ml_service.log')
-    ]
-)
-logger = logging.getLogger(__name__)
+import io
 
 app = FastAPI()
 
-# Enhanced Logging Function
-def log_error(context, exception):
-    logger.error(f"ERROR in {context}:")
-    logger.error(f"Error Type: {type(exception).__name__}")
-    logger.error(f"Error Details: {str(exception)}")
-    logger.error("Full Traceback:")
-    logger.error(traceback.format_exc())
+# Print environment information
+print("Environment Information:")
+print(f"Current working directory: {os.getcwd()}")
+print(f"Directory contents: {os.listdir('.')}")
 
-# Comprehensive System and Environment Check
-logger.info("Comprehensive System Information:")
-logger.info(f"Current Working Directory: {os.getcwd()}")
-logger.info(f"Python Version: {sys.version}")
-logger.info(f"TensorFlow Version: {tf.__version__}")
+# Load all models at startup
+models = {}
 
-# Verify savedModels Directory
-savedModels_path = os.path.join(os.getcwd(), 'savedModels')
-try:
-    logger.info("\nSavedModels Directory Check:")
-    logger.info(f"Directory Exists: {os.path.exists(savedModels_path)}")
-    logger.info(f"Is Directory: {os.path.isdir(savedModels_path)}")
-    logger.info(f"Contents: {os.listdir(savedModels_path)}")
-except Exception as e:
-    log_error("SavedModels Directory Check", e)
-
-# Load models configuration
+# Load joblib models configuration
 joblib_models = {
     'breast_cancer': 'breast_cancer_rfc_model.joblib',
     'diabetes': 'diabetes_dtc_model.joblib',
@@ -60,81 +30,56 @@ joblib_models = {
     'heart1': 'heart_rfc_model1.joblib'
 }
 
+# Load TensorFlow models configuration
 tf_models = {
     'pneumonia': 'pneumonia.h5'
 }
 
-# Initialize models dictionary
-models = {}
+# Check savedModels directory
+savedModels_path = '/savedModels'
+print(f"\nChecking savedModels directory:")
+print(f"savedModels path exists: {os.path.exists(savedModels_path)}")
+if os.path.exists(savedModels_path):
+    print(f"savedModels contents: {os.listdir(savedModels_path)}")
 
-# Load Joblib Models
+# Load joblib models
+print("\nLoading joblib models:")
 for model_name, model_file in joblib_models.items():
     try:
-        full_path = os.path.join(savedModels_path, model_file)
-        logger.info(f"\nLoading Joblib Model {model_name}:")
-        logger.info(f"Full Path: {full_path}")
-        logger.info(f"File Exists: {os.path.exists(full_path)}")
+        model_path = os.path.join(savedModels_path, model_file)
+        print(f"Loading {model_name} from {model_path}")
+        print(f"File exists: {os.path.exists(model_path)}")
         
-        if not os.path.exists(full_path):
-            logger.warning(f"WARNING: {full_path} does not exist!")
-            continue
-        
-        models[model_name] = load(full_path)
-        logger.info(f"Loaded Joblib Model {model_name} successfully")
+        models[model_name] = load(model_path)
+        print(f"Successfully loaded {model_name}")
     except Exception as e:
-        log_error(f"Joblib Model {model_name} Loading", e)
+        print(f"Error loading {model_name}: {str(e)}")
+        print(f"Traceback: {traceback.format_exc()}")
 
-# Enhanced TensorFlow Model Loading
+# Load TensorFlow models
+print("\nLoading TensorFlow models:")
 for model_name, model_file in tf_models.items():
     try:
-        full_path = os.path.join(savedModels_path, model_file)
+        model_path = os.path.join(savedModels_path, model_file)
+        print(f"Loading {model_name} from {model_path}")
+        print(f"File exists: {os.path.exists(model_path)}")
         
-        logger.info(f"\nAttempting to Load TensorFlow Model {model_name}:")
-        logger.info(f"Full Path: {full_path}")
-        logger.info(f"Absolute Path: {os.path.abspath(full_path)}")
-        
-        # Comprehensive File Checks
-        if not os.path.exists(full_path):
-            logger.error(f"ERROR: File {full_path} does not exist!")
+        if not os.path.exists(model_path):
+            print(f"Error: {model_path} does not exist!")
             continue
+            
+        # Try loading the model
+        print("Attempting to load model...")
+        model = tf.keras.models.load_model(model_path, compile=False)
+        print(f"Model loaded successfully")
+        print(f"Model input shape: {model.input_shape}")
+        print(f"Model output shape: {model.output_shape}")
         
-        if not os.path.isfile(full_path):
-            logger.error(f"ERROR: {full_path} is not a valid file!")
-            continue
-        
-        # File Size Check
-        file_size = os.path.getsize(full_path)
-        logger.info(f"File Size: {file_size} bytes")
-        
-        if file_size == 0:
-            logger.error(f"ERROR: {full_path} is an empty file!")
-            continue
-        
-        # Alternative Loading Methods
-        loading_methods = [
-            lambda: tf.keras.models.load_model(full_path, compile=False),
-            lambda: tf.keras.saving.load_model(full_path, compile=False)
-        ]
-        
-        model_loaded = False
-        for method in loading_methods:
-            try:
-                model = method()
-                logger.info(f"Model {model_name} loaded successfully")
-                logger.info(f"Input Shape: {model.input_shape}")
-                logger.info(f"Output Shape: {model.output_shape}")
-                
-                models[model_name] = model
-                model_loaded = True
-                break
-            except Exception as load_error:
-                logger.error(f"Loading method failed: {str(load_error)}")
-        
-        if not model_loaded:
-            logger.error(f"FAILED to load TensorFlow Model {model_name}")
-    
+        models[model_name] = model
+        print(f"Successfully stored {model_name} in models dictionary")
     except Exception as e:
-        log_error(f"TensorFlow Model {model_name} Loading", e)
+        print(f"Error loading {model_name}: {str(e)}")
+        print(f"Traceback: {traceback.format_exc()}")
 
 class PredictionRequest(BaseModel):
     model_name: str
@@ -143,49 +88,53 @@ class PredictionRequest(BaseModel):
 
 @app.post("/predict")
 async def predict(request: PredictionRequest):
-    logger.info(f"Received prediction request for: {request.model_name}")
+    print(f"\nReceived prediction request for model: {request.model_name}")
     
     if request.model_name not in models:
-        logger.error(f"Model not found: {request.model_name}")
-        logger.error(f"Available models: {list(models.keys())}")
+        print(f"Model {request.model_name} not found. Available models: {list(models.keys())}")
         raise HTTPException(status_code=404, detail=f"Model {request.model_name} not found")
     
     try:
         model = models[request.model_name]
         
-        # Pneumonia Model Special Handling
+        # Special handling for pneumonia model
         if request.model_name == 'pneumonia' and request.image:
-            # Decode base64 image
             try:
+                # Decode base64 image
                 image_bytes = base64.b64decode(request.image)
-                image = Image.open(BytesIO(image_bytes)).convert('L')  # Convert to grayscale
-                image = image.resize((150, 150))  # Assuming model expects 150x150
+                image = Image.open(io.BytesIO(image_bytes))
                 
-                # Normalize and reshape
-                img_array = np.array(image) / 255.0
-                img_array = img_array.reshape((1, 150, 150, 1))
+                # Preprocess image
+                image = image.convert('L')  # Convert to grayscale
+                image = image.resize((150, 150))  # Resize to expected dimensions
+                img_array = np.array(image)
+                img_array = img_array / 255.0  # Normalize
+                img_array = img_array.reshape((1, 150, 150, 1))  # Reshape for model
                 
+                # Make prediction
                 prediction = model.predict(img_array)
-                return {"prediction": int(prediction[0][0] > 0.5), "confidence": float(prediction[0][0])}
-            
-            except Exception as image_error:
-                logger.error(f"Image processing error: {str(image_error)}")
-                raise HTTPException(status_code=400, detail="Invalid image")
+                return {
+                    "prediction": int(prediction[0][0] > 0.5),
+                    "confidence": float(prediction[0][0])
+                }
+                
+            except Exception as e:
+                print(f"Error processing image: {str(e)}")
+                raise HTTPException(status_code=400, detail=f"Error processing image: {str(e)}")
         
-        # Other models
+        # Handle other models
         features = np.array(request.features)
+        print(f"Feature shape: {features.shape}")
         
-        if request.model_name in tf_models:
-            # Reshape to match model's expected input
-            features = features.reshape(model.input_shape[1:])
-        
+        # Make prediction
         prediction = model.predict(features.reshape(1, -1))
+        print(f"Prediction result: {prediction}")
+        
         return {"prediction": prediction.tolist()}
-    
+        
     except Exception as e:
-        logger.error(f"Prediction Error for {request.model_name}:")
-        logger.error(str(e))
-        logger.error(traceback.format_exc())
+        print(f"Error making prediction: {str(e)}")
+        print(f"Traceback: {traceback.format_exc()}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/health")
@@ -205,7 +154,7 @@ async def list_models():
         }
     }
 
-@app.exception_handler(Exception)
-async def global_exception_handler(request, exc):
-    logger.error(f"Unhandled exception: {exc}")
-    return {"error": "An unexpected error occurred"}
+# Print loaded models summary
+print("\nLoaded Models Summary:")
+print(f"Total models loaded: {len(models)}")
+print(f"Available models: {list(models.keys())}")
