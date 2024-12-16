@@ -7,6 +7,9 @@ from joblib import load
 import tensorflow as tf
 import os
 import logging
+import base64
+from PIL import Image
+import io
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -114,6 +117,10 @@ class PredictionRequest(BaseModel):
     model_name: str
     features: List[Union[float, int]]
 
+class ImagePredictionRequest(BaseModel):
+    model_name: str
+    image: str  # base64 encoded image
+
 @app.post("/predict")
 async def predict(request: PredictionRequest):
     """Make predictions using the specified model."""
@@ -147,6 +154,41 @@ async def predict(request: PredictionRequest):
         raise HTTPException(status_code=400, detail=f"Invalid input shape: {str(ve)}")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Prediction error: {str(e)}")
+
+@app.post("/predict_image")
+async def predict_image(request: ImagePredictionRequest):
+    """Endpoint for image-based predictions"""
+    if request.model_name not in models:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Model {request.model_name} not found"
+        )
+    
+    try:
+        # Decode base64 image
+        image_data = base64.b64decode(request.image)
+        image = Image.open(io.BytesIO(image_data))
+        
+        # Convert to grayscale and resize
+        image = image.convert('L')
+        image = image.resize((36, 36))
+        
+        # Convert to numpy array and normalize
+        image_array = np.array(image)
+        image_array = image_array / 255.0
+        image_array = image_array.reshape(1, 36, 36, 1)
+        
+        # Make prediction
+        prediction = models[request.model_name].predict(image_array)
+        confidence = float(prediction[0][0]) * 100
+        
+        return {
+            "prediction": int(prediction[0][0] > 0.5),
+            "confidence": round(confidence, 2)
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error processing image: {str(e)}")
 
 @app.get("/health")
 async def health_check():
