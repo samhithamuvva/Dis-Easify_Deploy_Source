@@ -1,36 +1,52 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from typing import List, Union
+from typing import List, Union, Optional
 import numpy as np
 from joblib import load
 import tensorflow as tf
 import os
 import sys
 import traceback
+import base64
+import logging
+from io import BytesIO
+from PIL import Image
+import numpy as np
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(sys.stdout),
+        logging.FileHandler('ml_service.log')
+    ]
+)
+logger = logging.getLogger(__name__)
 
 app = FastAPI()
 
 # Enhanced Logging Function
 def log_error(context, exception):
-    print(f"ERROR in {context}:")
-    print(f"Error Type: {type(exception).__name__}")
-    print(f"Error Details: {str(exception)}")
-    print("Full Traceback:")
-    traceback.print_exc()
+    logger.error(f"ERROR in {context}:")
+    logger.error(f"Error Type: {type(exception).__name__}")
+    logger.error(f"Error Details: {str(exception)}")
+    logger.error("Full Traceback:")
+    logger.error(traceback.format_exc())
 
 # Comprehensive System and Environment Check
-print("Comprehensive System Information:")
-print("Current Working Directory:", os.getcwd())
-print("Python Version:", sys.version)
-print("TensorFlow Version:", tf.__version__)
+logger.info("Comprehensive System Information:")
+logger.info(f"Current Working Directory: {os.getcwd()}")
+logger.info(f"Python Version: {sys.version}")
+logger.info(f"TensorFlow Version: {tf.__version__}")
 
 # Verify savedModels Directory
 savedModels_path = 'savedModels'
 try:
-    print("\nSavedModels Directory Check:")
-    print(f"Directory Exists: {os.path.exists(savedModels_path)}")
-    print(f"Is Directory: {os.path.isdir(savedModels_path)}")
-    print("Contents:", os.listdir(savedModels_path))
+    logger.info("\nSavedModels Directory Check:")
+    logger.info(f"Directory Exists: {os.path.exists(savedModels_path)}")
+    logger.info(f"Is Directory: {os.path.isdir(savedModels_path)}")
+    logger.info(f"Contents: {os.listdir(savedModels_path)}")
 except Exception as e:
     log_error("SavedModels Directory Check", e)
 
@@ -55,16 +71,16 @@ models = {}
 for model_name, model_file in joblib_models.items():
     try:
         full_path = os.path.join(savedModels_path, model_file)
-        print(f"\nLoading Joblib Model {model_name}:")
-        print(f"Full Path: {full_path}")
-        print(f"File Exists: {os.path.exists(full_path)}")
+        logger.info(f"\nLoading Joblib Model {model_name}:")
+        logger.info(f"Full Path: {full_path}")
+        logger.info(f"File Exists: {os.path.exists(full_path)}")
         
         if not os.path.exists(full_path):
-            print(f"WARNING: {full_path} does not exist!")
+            logger.warning(f"WARNING: {full_path} does not exist!")
             continue
         
         models[model_name] = load(full_path)
-        print(f"Loaded Joblib Model {model_name} successfully")
+        logger.info(f"Loaded Joblib Model {model_name} successfully")
     except Exception as e:
         log_error(f"Joblib Model {model_name} Loading", e)
 
@@ -73,25 +89,25 @@ for model_name, model_file in tf_models.items():
     try:
         full_path = os.path.join(savedModels_path, model_file)
         
-        print(f"\nAttempting to Load TensorFlow Model {model_name}:")
-        print(f"Full Path: {full_path}")
-        print(f"Absolute Path: {os.path.abspath(full_path)}")
+        logger.info(f"\nAttempting to Load TensorFlow Model {model_name}:")
+        logger.info(f"Full Path: {full_path}")
+        logger.info(f"Absolute Path: {os.path.abspath(full_path)}")
         
         # Comprehensive File Checks
         if not os.path.exists(full_path):
-            print(f"ERROR: File {full_path} does not exist!")
+            logger.error(f"ERROR: File {full_path} does not exist!")
             continue
         
         if not os.path.isfile(full_path):
-            print(f"ERROR: {full_path} is not a valid file!")
+            logger.error(f"ERROR: {full_path} is not a valid file!")
             continue
         
         # File Size Check
         file_size = os.path.getsize(full_path)
-        print(f"File Size: {file_size} bytes")
+        logger.info(f"File Size: {file_size} bytes")
         
         if file_size == 0:
-            print(f"ERROR: {full_path} is an empty file!")
+            logger.error(f"ERROR: {full_path} is an empty file!")
             continue
         
         # Alternative Loading Methods
@@ -104,18 +120,18 @@ for model_name, model_file in tf_models.items():
         for method in loading_methods:
             try:
                 model = method()
-                print(f"Model {model_name} loaded successfully")
-                print(f"Input Shape: {model.input_shape}")
-                print(f"Output Shape: {model.output_shape}")
+                logger.info(f"Model {model_name} loaded successfully")
+                logger.info(f"Input Shape: {model.input_shape}")
+                logger.info(f"Output Shape: {model.output_shape}")
                 
                 models[model_name] = model
                 model_loaded = True
                 break
             except Exception as load_error:
-                print(f"Loading method failed: {str(load_error)}")
+                logger.error(f"Loading method failed: {str(load_error)}")
         
         if not model_loaded:
-            print(f"FAILED to load TensorFlow Model {model_name}")
+            logger.error(f"FAILED to load TensorFlow Model {model_name}")
     
     except Exception as e:
         log_error(f"TensorFlow Model {model_name} Loading", e)
@@ -123,24 +139,53 @@ for model_name, model_file in tf_models.items():
 class PredictionRequest(BaseModel):
     model_name: str
     features: List[Union[float, int]]
+    image: Optional[str] = None
 
 @app.post("/predict")
 async def predict(request: PredictionRequest):
+    logger.info(f"Received prediction request for: {request.model_name}")
+    
     if request.model_name not in models:
+        logger.error(f"Model not found: {request.model_name}")
+        logger.error(f"Available models: {list(models.keys())}")
         raise HTTPException(status_code=404, detail=f"Model {request.model_name} not found")
     
     try:
         model = models[request.model_name]
+        
+        # Pneumonia Model Special Handling
+        if request.model_name == 'pneumonia' and request.image:
+            # Decode base64 image
+            try:
+                image_bytes = base64.b64decode(request.image)
+                image = Image.open(BytesIO(image_bytes)).convert('L')  # Convert to grayscale
+                image = image.resize((150, 150))  # Assuming model expects 150x150
+                
+                # Normalize and reshape
+                img_array = np.array(image) / 255.0
+                img_array = img_array.reshape((1, 150, 150, 1))
+                
+                prediction = model.predict(img_array)
+                return {"prediction": int(prediction[0][0] > 0.5), "confidence": float(prediction[0][0])}
+            
+            except Exception as image_error:
+                logger.error(f"Image processing error: {str(image_error)}")
+                raise HTTPException(status_code=400, detail="Invalid image")
+        
+        # Other models
         features = np.array(request.features)
         
-        # Special handling for TensorFlow models
         if request.model_name in tf_models:
             # Reshape to match model's expected input
             features = features.reshape(model.input_shape[1:])
         
         prediction = model.predict(features.reshape(1, -1))
         return {"prediction": prediction.tolist()}
+    
     except Exception as e:
+        logger.error(f"Prediction Error for {request.model_name}:")
+        logger.error(str(e))
+        logger.error(traceback.format_exc())
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/health")
@@ -160,8 +205,7 @@ async def list_models():
         }
     }
 
-# Optional: If you want to add more detailed error logging
 @app.exception_handler(Exception)
 async def global_exception_handler(request, exc):
-    print(f"Unhandled exception: {exc}")
+    logger.error(f"Unhandled exception: {exc}")
     return {"error": "An unexpected error occurred"}
