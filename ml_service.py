@@ -40,7 +40,7 @@ joblib_models = {
 tf_models = {
     'pneumonia': {
         'file': 'pneumonia.h5',
-        'input_shape': (224, 224, 1)  # Standard shape for medical images
+        'input_shape': (36, 36, 1)  # Updated to match the error message
     }
 }
 
@@ -57,22 +57,58 @@ for model_name, model_file in joblib_models.items():
 for model_name, model_info in tf_models.items():
     try:
         logger.info(f"Attempting to load {model_name} from /savedModels/{model_info['file']}")
-        # Custom load for TensorFlow models
-        custom_objects = None
-        models[model_name] = tf.keras.models.load_model(
-            f'/savedModels/{model_info["file"]}',
-            custom_objects=custom_objects,
-            compile=False
-        )
-        # Recompile the model
-        models[model_name].compile(
+        
+        # Define the input shape explicitly
+        input_shape = model_info['input_shape']
+        inputs = tf.keras.Input(shape=input_shape)
+        
+        # Try loading the model with custom input shape
+        try:
+            base_model = tf.keras.models.load_model(
+                f'/savedModels/{model_info["file"]}',
+                compile=False
+            )
+            # Rebuild the model with correct input shape
+            x = inputs
+            for layer in base_model.layers[1:]:  # Skip the input layer
+                x = layer(x)
+            model = tf.keras.Model(inputs=inputs, outputs=x)
+            
+        except Exception as model_error:
+            logger.error(f"Error rebuilding model: {model_error}")
+            # Try alternative model if available
+            try:
+                logger.info("Attempting to load pneumonia2.h5")
+                model = tf.keras.models.load_model(f'/savedModels/pneumonia2.h5', compile=False)
+            except Exception as alt_error:
+                logger.error(f"Error loading alternative model: {alt_error}")
+                raise
+        
+        # Compile the model
+        model.compile(
             optimizer='adam',
             loss='binary_crossentropy',
             metrics=['accuracy']
         )
+        
+        models[model_name] = model
         logger.info(f"Loaded {model_name} successfully")
+        
     except Exception as e:
         logger.error(f"Error loading {model_name}: {e}")
+        # Try the next alternative
+        try:
+            logger.info("Attempting to load pneumonia3.h5 as final alternative")
+            model = tf.keras.models.load_model(f'/savedModels/pneumonia3.h5', compile=False)
+            model.compile(
+                optimizer='adam',
+                loss='binary_crossentropy',
+                metrics=['accuracy']
+            )
+            models[model_name] = model
+            logger.info(f"Loaded {model_name} (using pneumonia3.h5) successfully")
+        except Exception as final_error:
+            logger.error(f"Failed to load any pneumonia model: {final_error}")
 
 class PredictionRequest(BaseModel):
     model_name: str
@@ -94,8 +130,8 @@ async def predict(request: PredictionRequest):
         # Handle different model types
         if request.model_name in tf_models:
             # For pneumonia model
-            expected_shape = tf_models[request.model_name]['input_shape']
-            features = features.reshape((1,) + expected_shape)
+            input_shape = tf_models[request.model_name]['input_shape']
+            features = features.reshape((-1,) + input_shape)
             # Ensure values are between 0 and 1
             features = features / 255.0 if features.max() > 1.0 else features
             prediction = model.predict(features)
@@ -138,7 +174,7 @@ async def list_models():
             "tensorflow_models": {
                 name: {
                     "status": "loaded" if name in models else "failed",
-                    "expected_input_shape": model_info["input_shape"]
+                    "expected_input_shape": model_info["input_shape"] if name in models else None
                 }
                 for name, model_info in tf_models.items()
             }
