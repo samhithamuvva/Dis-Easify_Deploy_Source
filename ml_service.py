@@ -8,10 +8,6 @@ import os
 
 app = FastAPI()
 
-# Print current directory and contents for debugging
-print(f"Current directory: {os.getcwd()}")
-print(f"Directory contents: {os.listdir('.')}")
-
 # Load all models at startup
 models = {}
 
@@ -30,22 +26,10 @@ tf_models = {
     'pneumonia': 'pneumonia.h5'
 }
 
-# Check if models directory exists
-if not os.path.exists('/savedModels'):
-    print("Error: /savedModels directory not found!")
-    print(f"Available directories: {os.listdir('/')}")
-else:
-    print(f"Models directory contents: {os.listdir('/savedModels')}")
-
 # Load joblib models
 for model_name, model_file in joblib_models.items():
     try:
-        file_path = f'/savedModels/{model_file}'
-        print(f"Attempting to load {model_name} from {file_path}")
-        if not os.path.exists(file_path):
-            print(f"File not found: {file_path}")
-            continue
-        models[model_name] = load(file_path)
+        models[model_name] = load(f'/savedModels/{model_file}')
         print(f"Loaded {model_name} successfully")
     except Exception as e:
         print(f"Error loading {model_name}: {e}")
@@ -53,12 +37,46 @@ for model_name, model_file in joblib_models.items():
 # Load TensorFlow models
 for model_name, model_file in tf_models.items():
     try:
-        file_path = f'/savedModels/{model_file}'
-        print(f"Attempting to load {model_name} from {file_path}")
-        if not os.path.exists(file_path):
-            print(f"File not found: {file_path}")
-            continue
-        models[model_name] = tf.keras.models.load_model(file_path, compile=False)
+        models[model_name] = tf.keras.models.load_model(f'/savedModels/{model_file}')
         print(f"Loaded {model_name} successfully")
     except Exception as e:
         print(f"Error loading {model_name}: {e}")
+
+class PredictionRequest(BaseModel):
+    model_name: str
+    features: List[Union[float, int]]
+
+@app.post("/predict")
+async def predict(request: PredictionRequest):
+    if request.model_name not in models:
+        raise HTTPException(status_code=404, detail=f"Model {request.model_name} not found")
+    
+    try:
+        model = models[request.model_name]
+        features = np.array(request.features)
+        
+        # Reshape features for TensorFlow models if needed
+        if request.model_name in tf_models:
+            features = features.reshape(model.input_shape)
+        
+        prediction = model.predict(features.reshape(1, -1))
+        return {"prediction": prediction.tolist()}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/health")
+async def health_check():
+    return {
+        "status": "healthy",
+        "available_models": list(models.keys())
+    }
+
+@app.get("/models")
+async def list_models():
+    return {
+        "models": {
+            "joblib_models": list(joblib_models.keys()),
+            "tensorflow_models": list(tf_models.keys()),
+            "loaded_models": list(models.keys())
+        }
+    }
