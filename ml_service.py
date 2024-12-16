@@ -11,7 +11,7 @@ app = FastAPI()
 # Load all models at startup
 models = {}
 
-# Load joblib models
+# Joblib models configuration
 joblib_models = {
     'breast_cancer': 'breast_cancer_rfc_model.joblib',
     'diabetes': 'diabetes_dtc_model.joblib',
@@ -21,7 +21,7 @@ joblib_models = {
     'heart1': 'heart_rfc_model1.joblib'
 }
 
-# Load TensorFlow models
+# TensorFlow models configuration
 tf_models = {
     'pneumonia': 'pneumonia.h5'
 }
@@ -40,32 +40,44 @@ for model_name, model_file in tf_models.items():
         models[model_name] = tf.keras.models.load_model(f'/savedModels/{model_file}')
         print(f"Loaded {model_name} successfully")
     except Exception as e:
-        print(f"Error loading {model_name}: {e}")
+        print(f"Error loading {model_name}: {e}. Please check input shape or preprocessing pipeline.")
 
 class PredictionRequest(BaseModel):
     model_name: str
     features: List[Union[float, int]]
 
+@app.get("/")
+async def root():
+    """Root endpoint to indicate API is live."""
+    return {"message": "Welcome to the ML Service API"}
+
 @app.post("/predict")
 async def predict(request: PredictionRequest):
+    """Endpoint to make predictions using the specified model."""
     if request.model_name not in models:
         raise HTTPException(status_code=404, detail=f"Model {request.model_name} not found")
     
     try:
         model = models[request.model_name]
         features = np.array(request.features)
-        
-        # Reshape features for TensorFlow models if needed
+
+        # Handle TensorFlow models differently
         if request.model_name in tf_models:
-            features = features.reshape(model.input_shape)
+            input_shape = model.input_shape[1:]  # Exclude batch size
+            features = features.reshape(input_shape)
+            prediction = model.predict(features[np.newaxis, ...])  # Add batch dimension
+        else:
+            prediction = model.predict(features.reshape(1, -1))
         
-        prediction = model.predict(features.reshape(1, -1))
         return {"prediction": prediction.tolist()}
+    except ValueError as ve:
+        raise HTTPException(status_code=400, detail=f"Invalid input shape: {ve}")
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=f"Error during prediction: {e}")
 
 @app.get("/health")
 async def health_check():
+    """Health check endpoint to verify the service is running and models are loaded."""
     return {
         "status": "healthy",
         "available_models": list(models.keys())
@@ -73,10 +85,14 @@ async def health_check():
 
 @app.get("/models")
 async def list_models():
+    """List all available models and their details."""
     return {
         "models": {
-            "joblib_models": list(joblib_models.keys()),
-            "tensorflow_models": list(tf_models.keys()),
+            "joblib_models": {name: "sklearn joblib" for name in joblib_models.keys()},
+            "tensorflow_models": {
+                name: models[name].input_shape if name in models else "Not Loaded"
+                for name in tf_models.keys()
+            },
             "loaded_models": list(models.keys())
         }
     }
