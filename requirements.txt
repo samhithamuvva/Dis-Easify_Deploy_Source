@@ -66,5 +66,6 @@ wrapt==1.16.0
 zipp==3.21.0
 fastapi
 uvicorn
+Pillow==10.1.0 
 
 
