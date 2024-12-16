@@ -259,7 +259,7 @@ def disease_pred_result(request):
         response = requests.post(
             f"{settings.ML_SERVICE_URL}/predict", 
             json={
-                'model_name': 'general_disease',
+                'model_name': 'disease_dtc',
                 'symptoms': list_updated
             },
             timeout=10
