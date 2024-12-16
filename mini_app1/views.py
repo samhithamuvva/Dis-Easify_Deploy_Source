@@ -199,13 +199,14 @@ def pneumonia_result(request):
         with open('.' + filePathName, 'rb') as image_file:
             encoded_image = base64.b64encode(image_file.read()).decode('utf-8')
         
+        # Updated to use predict_image endpoint
         response = requests.post(
-            f"{settings.ML_SERVICE_URL}/predict", 
+            f"{settings.ML_SERVICE_URL}/predict_image", 
             json={
                 'model_name': 'pneumonia',
                 'image': encoded_image
             },
-            timeout=10
+            timeout=30  # Increased timeout for image processing
         )
         
         if response.status_code == 200:
