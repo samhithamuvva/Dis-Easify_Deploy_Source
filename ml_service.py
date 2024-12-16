@@ -1,12 +1,15 @@
+import os
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import List, Union
 import numpy as np
 from joblib import load
 import tensorflow as tf
-import os
 
 app = FastAPI()
+
+# Define base path for models
+BASE_MODEL_PATH = os.path.join(os.path.dirname(__file__), 'savedModels')
 
 # Load all models at startup
 models = {}
@@ -29,22 +32,20 @@ tf_models = {
 # Load joblib models
 for model_name, model_file in joblib_models.items():
     try:
-        models[model_name] = load(f'/savedModels/{model_file}')
-        print(f"Loaded {model_name} successfully")
+        model_path = os.path.join(BASE_MODEL_PATH, model_file)
+        models[model_name] = load(model_path)
+        print(f"Loaded {model_name} successfully from {model_path}")
     except Exception as e:
         print(f"Error loading {model_name}: {e}")
 
 # Load TensorFlow models
 for model_name, model_file in tf_models.items():
     try:
-        models[model_name] = tf.keras.models.load_model(f'/savedModels/{model_file}')
-        print(f"Loaded {model_name} successfully")
+        model_path = os.path.join(BASE_MODEL_PATH, model_file)
+        models[model_name] = tf.keras.models.load_model(model_path)
+        print(f"Loaded {model_name} successfully from {model_path}")
     except Exception as e:
-        print(f"Error loading {model_name}: {e}. Please check input shape or preprocessing pipeline.")
-
-class PredictionRequest(BaseModel):
-    model_name: str
-    features: List[Union[float, int]]
+        print(f"Error loading {model_name}: {e}")
 
 @app.get("/")
 async def root():
