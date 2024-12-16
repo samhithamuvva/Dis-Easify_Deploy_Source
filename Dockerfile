@@ -19,14 +19,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY savedModels/ /savedModels/
 COPY ml_service.py .
 
-# Add verification step
-RUN python3 -c "\
-import os; \
-print('Current Directory:', os.getcwd()); \
-print('Directory Contents:', os.listdir('.')); \
-print('SavedModels Contents:', os.listdir('/savedModels')); \
-"
-
 EXPOSE 8080
 
 CMD ["uvicorn", "ml_service:app", "--host", "0.0.0.0", "--port", "8080"]
