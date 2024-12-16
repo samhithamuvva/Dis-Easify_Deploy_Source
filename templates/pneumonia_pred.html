@@ -2,109 +2,117 @@
 <!DOCTYPE html>
 <html>
 <head>
-            <link rel="stylesheet" href="{% static 'css/pneumonia.css' %}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'css/pneumonia.css' %}">
     <style>
-
-html {
-    height: 100%;
-}
-
-body {
-    margin: 0;
-    padding: 0;
-    font-family: sans-serif;
-    background: linear-gradient(#141e30, #243b55);
-    color: #fff;
-}
-
-.login-box {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 700px;
-    padding: 40px;
-    transform: translate(-50%, -50%);
-    background: rgba(0,0,0,.5);
-    box-sizing: border-box;
-    box-shadow: 0 15px 25px rgba(0,0,0,.6);
-    border-radius: 10px;
-}
-
-    .login-box h2 {
-        margin: 0 0 30px;
-        padding: 0;
-        text-align: center;
-    }
-.container {
-    position:left;
-    top: 50%;
-    left: 50%;
-
-    width: 130px;
-    height: 40px;
-    text-align: center;
-}
-
-button {
-    outline: none;
-    height: 40px;
-    text-align: center;
-    width: 130px;
-    border-radius: 40px;
-    background: #243b55;
-    border: 2px solid #03e9f4;
-    color: #03e9f4;
-    letter-spacing: 1px;
-    text-shadow: 0;
-    font-size: 12px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.25s ease;
-}
-
-    button:hover {
-        color: white;
-        background: #03e9f4;
-    }
-
-    button:active {
-        letter-spacing: 2px;
-    }
-
-    button:after {
-        content: "SUBMIT";
-    }
-
-
-
-
-
+        html {
+            height: 100%;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: sans-serif;
+            background: linear-gradient(#141e30, #243b55);
+            color: #fff;
+        }
+        .login-box {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 700px;
+            padding: 40px;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,.5);
+            box-sizing: border-box;
+            box-shadow: 0 15px 25px rgba(0,0,0,.6);
+            border-radius: 10px;
+        }
+        .login-box h2 {
+            margin: 0 0 30px;
+            padding: 0;
+            text-align: center;
+        }
+        .container {
+            position: left;
+            top: 50%;
+            left: 50%;
+            width: 130px;
+            height: 40px;
+            text-align: center;
+        }
+        button {
+            outline: none;
+            height: 40px;
+            text-align: center;
+            width: 130px;
+            border-radius: 40px;
+            background: #243b55;
+            border: 2px solid #03e9f4;
+            color: #03e9f4;
+            letter-spacing: 1px;
+            text-shadow: 0;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+        button:hover {
+            color: white;
+            background: #03e9f4;
+        }
+        button:active {
+            letter-spacing: 2px;
+        }
+        button:after {
+            content: "SUBMIT";
+        }
+        .error-message {
+            color: #ff4444;
+            text-align: center;
+            margin-top: 10px;
+        }
+        .file-input {
+            margin: 15px 0;
+        }
+        .file-input input[type="file"] {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px;
+            border-radius: 5px;
+            width: 100%;
+            border: 1px solid #03e9f4;
+        }
     </style>
-
 </head>
 <body>
-
-
-<div class="login-box">
+    <div class="login-box">
         <h2>Pneumonia Detection</h2>
-    <form action="pneumonia_result" method="post", enctype="multipart/form-data">
-        {% csrf_token %}
-        <h4>Upload Image</h4>
-        <input type="file" id="img" name="img" accept="image/*" required><br />
-        <br>
-        <div class="container">
-            <button id="button" type="submit"></button>
-        </div>
+        {% if messages %}
+            {% for message in messages %}
+                <div class="error-message">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+        <form action="{% url 'pneumonia_result' %}" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="file-input">
+                <h4>Upload Image</h4>
+                <input type="file" id="img" name="img" accept="image/*" required>
+            </div>
+            <div class="container">
+                <button id="button" type="submit"></button>
+            </div>
+        </form>
+    </div>
 
-
-
-<!--<img src={{ filePathName }} alt="image"> -->
-<!--
-<h1>{{ pred }}</h1> -->
-
-    </form>
-</div>
-
-
+    <script>
+        // Add client-side validation if needed
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const fileInput = document.getElementById('img');
+            if (!fileInput.files.length) {
+                e.preventDefault();
+                alert('Please select an image file');
+            }
+        });
+    </script>
 </body>
 </html>
