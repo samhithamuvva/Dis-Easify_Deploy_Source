@@ -33,16 +33,14 @@ models = {}
 joblib_models = {
     'breast_cancer': 'breast_cancer_rfc_model.joblib',
     'diabetes': 'diabetes_dtc_model.joblib',
-    'disease_dtc': 'disease_dtc_model.joblib',
     'disease_gnb': 'disease_gnb_model.joblib',
-    'heart': 'heart_rfc_model.joblib',
-    'heart1': 'heart_rfc_model1.joblib'
+    'heart': 'heart_dtc_model1.joblib',
 }
 
 # TensorFlow models configuration with expected shapes
 tf_models = {
     'pneumonia': {
-        'file': 'pneumonia.h5',
+        'file': 'pneumonia2.h5',
         'input_shape': (36, 36, 1)  # Updated to match the error message
     }
 }
