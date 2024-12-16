@@ -15,8 +15,15 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy application files
-COPY savedModels/ /savedModels/
+# Create models directory and verify
+RUN mkdir -p /savedModels && \
+    echo "Created models directory"
+
+# Copy models and verify
+COPY savedModels/* /savedModels/
+RUN ls -la /savedModels && \
+    echo "Models directory contents:"
+
 COPY ml_service.py .
 
 EXPOSE 8080
