@@ -59,31 +59,36 @@ for model_name, model_info in tf_models.items():
     try:
         logger.info(f"Attempting to load {model_name} from /savedModels/{model_info['file']}")
         
-        # Define the input shape explicitly
-        input_shape = model_info['input_shape']
-        inputs = tf.keras.Input(shape=input_shape)
+        # Direct model loading without rebuilding
+        model_path = f'/savedModels/{model_info["file"]}'
         
-        # Try loading the model with custom input shape
-        try:
-            base_model = tf.keras.models.load_model(
-                f'/savedModels/{model_info["file"]}',
-                compile=False
-            )
-            # Rebuild the model with correct input shape
-            x = inputs
-            for layer in base_model.layers[1:]:  # Skip the input layer
-                x = layer(x)
-            model = tf.keras.Model(inputs=inputs, outputs=x)
-            
-        except Exception as model_error:
-            logger.error(f"Error rebuilding model: {model_error}")
-            # Try alternative model if available
-            try:
-                logger.info("Attempting to load pneumonia2.h5")
-                model = tf.keras.models.load_model(f'/savedModels/pneumonia2.h5', compile=False)
-            except Exception as alt_error:
-                logger.error(f"Error loading alternative model: {alt_error}")
-                raise
+        # Verify file exists
+        if not os.path.exists(model_path):
+            logger.error(f"Model file does not exist: {model_path}")
+            raise FileNotFoundError(f"Model file not found: {model_path}")
+        
+        # Load the model directly
+        model = tf.keras.models.load_model(
+            model_path,
+            compile=False
+        )
+        
+        # Log model details
+        logger.info(f"Model Input Shape: {model.input_shape}")
+        logger.info(f"Model Output Shape: {model.output_shape}")
+        
+        # Compile the model
+        model.compile(
+            optimizer='adam',
+            loss='binary_crossentropy',
+            metrics=['accuracy']
+        )
+        
+        models[model_name] = model
+        logger.info(f"Loaded {model_name} successfully")
+        
+    except Exception as e:
+        logger.error(f"Error loading {model_name}: {e}")
         
         # Compile the model
         model.compile(
